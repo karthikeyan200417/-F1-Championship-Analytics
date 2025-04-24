@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>F1 Data Analysis Dashboard</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.16.1/plotly.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Titillium+Web:wght@300;400;600;700&display=swap');
+    
+    :root {
+      --f1-red: #e10600;
+      --f1-black: #15151e;
+      --f1-dark-gray: #1a1a1a;
+      --f1-light-gray: #38383f;
+      --f1-white: #ffffff;
+      --f1-accent: #ff0000;
+    }
+    
+    body {
+      font-family: 'Titillium Web', sans-serif;
+      background-color: var(--f1-black);
+      color: var(--f1-white);
+      margin: 0;
+      padding: 0;
+    }
+    
+    .f1-header {
+      background: linear-gradient(90deg, var(--f1-black) 0%, var(--f1-red) 100%);
+      padding: 1rem 0;
+      border-bottom: 3px solid var(--f1-accent);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .f1-header::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 5px;
+      background: linear-gradient(90deg, 
+        #ff0000 0%, #ff0000 20%, 
+        transparent 20%, transparent 40%,
+        #ff0000 40%, #ff0000 60%,
+        transparent 60%, transparent 80%,
+        #ff0000 80%, #ff0000 100%);
+    }
+    
+    .f1-logo {
+      font-weight: 700;
+      letter-spacing: 1px;
+      position: relative;
+    }
+    
+    .f1-card {
+      background-color: var(--f1-dark-gray);
+      border-left: 4px solid var(--f1-red);
+      border-radius: 6px;
+      overflow: hidden;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+      transition: transform 0.3s ease;
+    }
+    
+    .f1-card:hover {
+      transform: translateY(-5px);
+    }
+    
+    .f1-card-header {
+      background: linear-gradient(90deg, rgba(225, 6, 0, 0.8) 0%, var(--f1-dark-gray) 100%);
+      padding: 0.75rem 1rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .f1-btn {
+      background-color: var(--f1-red);
+      color: var(--f1-white);
+      border: none;
+      border-radius: 4px;
+      padding: 0.5rem 1rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.1s ease;
+      font-size: 0.9rem;
+      letter-spacing: 0.5px;
+    }
+    
+    .f1-btn:hover {
+      background-color: #ff1a00;
+      transform: scale(1.05);
+    }
+    
+    .f1-btn:active {
+      transform: scale(0.95);
+    }
+    
+    .f1-select {
+      background-color: var(--f1-light-gray);
+      color: var(--f1-white);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+      padding: 0.5rem;
+      appearance: none;
+      cursor: pointer;
+      width: 100%;
+    }
+    
+    .f1-select:focus {
+      outline: none;
+      border-color: var(--f1-red);
+    }
+    
+    .multi-select-dropdown {
+      width: 100%;
+      position: relative;
+    }
+    
+    .checkboxes {
+      display: none;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background-color: var(--f1-light-gray);
+      border-radius: 4px;
+      position: absolute;
+      width: 100%;
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 100;
+    }
+    
+    .checkboxes label {
+      display: block;
+      padding: 8px;
+    }
+    
+    .checkboxes label:hover {
+      background-color: rgba(225, 6, 0, 0.2);
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 1rem;
+    }
+    
+    .stat-box {
+      background-color: rgba(255, 255, 255, 0.05);
+      border-radius: 6px;
+      padding: 1rem;
+      text-align: center;
+      border-bottom: 3px solid var(--f1-red);
+    }
+    
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      margin: 0.5rem 0;
+      color: var(--f1-white);
+    }
+    
+    .stat-label {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .progress-container {
+      width: 100%;
+      height: 8px;
+      background-color: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      margin: 0.5rem 0;
+    }
+    
+    .progress-bar {
+      height: 100%;
+      background-color: var(--f1-red);
+      border-radius: 4px;
+      transition: width 0.5s ease;
+    }
+    
+    .driver-card {
+      display: flex;
+      flex-direction: column;
+      background: linear-gradient(135deg, var(--f1-dark-gray) 0%, var(--f1-black) 100%);
+      border-radius: 10px;
+      overflow: hidden;
+      border-left: 4px solid var(--f1-red);
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    
+    .checkered-pattern {
+      background-image: linear-gradient(45deg, var(--f1-black) 25%, transparent 25%),
+                        linear-gradient(-45deg, var(--f1-black) 25%, transparent 25%),
+                        linear-gradient(45deg, transparent 75%, var(--f1-black) 75%),
+                        linear-gradient(-45deg, transparent 75%, var(--f1-black) 75%);
+      background-size: 20px 20px;
+      background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+    
+    .racing-stripe {
+      height: 10px;
+      background: linear-gradient(90deg, 
+        var(--f1-red) 0%, var(--f1-red) 40%, 
+        var(--f1-white) 40%, var(--f1-white) 60%, 
+        var(--f1-red) 60%, var(--f1-red) 100%);
+      border-radius: 5px;
+      margin: 2rem 0;
+    }
+    
+    .chart-container {
+      width: 100%;
+      margin-bottom: 2rem;
+      background-color: var(--f1-dark-gray);
+      border-radius: 6px;
+      overflow: hidden;
+      padding: 1rem;
+    }
+    
+    .tabs {
+      display: flex;
+      margin-bottom: 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .tab {
+      padding: 0.75rem 1.5rem;
+      cursor: pointer;
+      color: rgba(255, 255, 255, 0.7);
+      border-bottom: 3px solid transparent;
+      transition: all 0.3s ease;
+    }
+    
+    .tab.active {
+      border-bottom: 3px solid var(--f1-red);
+      color: var(--f1-white);
+      font-weight: 600;
+    }
+    
+    .tab:hover:not(.active) {
+      color: var(--f1-white);
+      border-bottom: 3px solid rgba(225, 6, 0, 0.5);
+    }
+    
+    .tab-content {
+      display: none;
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+    
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      display: none;
+    }
+    
+    .modal {
+      background-color: var(--f1-dark-gray);
+      border-radius: 8px;
+      max-width: 600px;
+      width: 90%;
+      max-height: 90%;
+      overflow-y: auto;
+      position: relative;
+      border-left: 5px solid var(--f1-red);
+    }
+    
+    .close-modal {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: rgba(255, 255, 255, 0.7);
+      transition: color 0.3s ease;
+    }
+    
+    .close-modal:hover {
+      color: var(--f1-white);
+    }
+    
+    .loading-spinner {
+      border: 4px solid rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      border-top: 4px solid var(--f1-red);
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .driver-select-container {
+      position: relative;
+      display: inline-block;
+      width: 100%;
+    }
+    
+    .driver-select-btn {
+      background-color: var(--f1-light-gray);
+      color: var(--f1-white);
+      padding: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+      cursor: pointer;
+      width: 100%;
+      text-align: left;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .scroll-indicator {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: var(--f1-red);
+      color: white;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    
+    .scroll-indicator.visible {
+      opacity: 1;
+    }
+    
+    /* Team colors */
+    .team-mercedes { border-color: #00D2BE; }
+    .team-redbull { border-color: #0600EF; }
+    .team-ferrari { border-color: #DC0000; }
+    .team-mclaren { border-color: #FF8700; }
+    .team-alpine { border-color: #0090FF; }
+    .team-astonmartin { border-color: #006F62; }
+    .team-williams { border-color: #005AFF; }
+    .team-haas { border-color: #FFFFFF; }
+    .team-alphatauri { border-color: #2B4562; }
+    .team-sauber { border-color: #900000; }
+
+    /* Image styling for plots */
+    .plot-img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+    }
+  </style>
+</head>
+<body>
+  <header class="f1-header mb-6">
+    <div class="container mx-auto px-4 flex justify-between items-center">
+      <div class="f1-logo text-3xl text-white">
+        <i class="fas fa-flag-checkered mr-2"></i>F1 ANALYTICS
+      </div>
+      <nav>
+        <ul class="flex space-x-6">
+          <li><a href="#drivers" class="text-white hover:text-red-300 font-semibold transition-colors duration-200">DRIVERS</a></li>
+          <li><a href="#charts" class="text-white hover:text-red-300 font-semibold transition-colors duration-200">CHARTS</a></li>
+          <li><a href="#analysis" class="text-white hover:text-red-300 font-semibold transition-colors duration-200">ANALYSIS</a></li>
+          <li><a href="#simulation" class="text-white hover:text-red-300 font-semibold transition-colors duration-200">SIMULATION</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container mx-auto px-4 pb-16">
+    <!-- Top Stats Overview -->
+    <section class="mb-12">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="f1-card col-span-1 md:col-span-2">
+          <div class="f1-card-header">
+            <h2 class="text-lg font-bold flex items-center">
+              <i class="fas fa-trophy mr-2"></i> SEASON STANDINGS
+            </h2>
+          </div>
+          <div class="p-4">
+            <table class="w-full">
+              <thead>
+                <tr class="text-left text-sm text-gray-400 border-b border-gray-700">
+                  <th class="pb-2">POS</th>
+                  <th class="pb-2">DRIVER</th>
+                  <th class="pb-2">TEAM</th>
+                  <th class="pb-2 text-right">PTS</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for index, row in df_drivers.sort_values(by='Pts', ascending=False).head(5).iterrows() %}
+                <tr class="border-b border-gray-800">
+                  <td class="py-3">{{ index + 1 }}</td>
+                  <td class="py-3 font-semibold">{{ row['Driver'] }}</td>
+                  <td class="py-3 {% if row['Driver'] in ['Max Verstappen', 'Sergio Perez'] %}text-blue-600{% elif row['Driver'] in ['Lando Norris', 'Oscar Piastri'] %}text-orange-500{% elif row['Driver'] in ['Charles Leclerc', 'Carlos Sainz'] %}text-red-600{% endif %}">
+                    {{ row['Team'] }}
+                  </td>
+                  <td class="py-3 text-right font-bold">{{ row['Pts'] }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        
+        <div class="f1-card">
+          <div class="f1-card-header">
+            <h2 class="text-lg font-bold flex items-center">
+              <i class="fas fa-chart-line mr-2"></i> QUICK STATS
+            </h2>
+          </div>
+          <div class="p-4">
+            <div class="stats-grid">
+              <div class="stat-box">
+                <div class="stat-label">RACES</div>
+                <div class="stat-value">{{ df_drivers.columns[3:] | length }}</div>
+              </div>
+              <div class="stat-box">
+                <div class="stat-label">DRIVERS</div>
+                <div class="stat-value">{{ df_drivers['Driver'] | length }}</div>
+              </div>
+              <div class="stat-box">
+                <div class="stat-label">TEAMS</div>
+                <div class="stat-value">10</div>
+              </div>
+              <div class="stat-box">
+                <div class="stat-label">COMPLETED</div>
+                <div class="stat-value">100<span class="text-sm">%</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Driver Selection -->
+    <section id="drivers" class="mb-12">
+      <h2 class="text-2xl font-bold mb-6 flex items-center">
+        <i class="fas fa-user-astronaut mr-2 text-red-600"></i> DRIVER ANALYSIS
+      </h2>
+      
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="f1-card col-span-1">
+          <div class="f1-card-header">
+            <h3 class="text-lg font-bold">SELECT DRIVER</h3>
+          </div>
+          <div class="p-4">
+            <form id="driverAnalysisForm" method="POST" action="/">
+              <div class="mb-4">
+                <label for="driver_name" class="block text-sm font-medium mb-2">Driver Name</label>
+                <select name="driver_name" id="driver_name" class="f1-select">
+                  <option value="">Select a driver</option>
+                  {% for driver in all_drivers %}
+                  <option value="{{ driver }}" {% if driver == driver_name %}selected{% endif %}>{{ driver }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <button type="submit" class="f1-btn w-full">
+                <i class="fas fa-search mr-2"></i> ANALYZE DRIVER
+              </button>
+            </form>
+          </div>
+        </div>
+        
+        <div class="f1-card col-span-1 lg:col-span-2" id="driverAnalysisResults">
+          <div class="f1-card-header">
+            <h3 class="text-lg font-bold">DRIVER INSIGHTS</h3>
+          </div>
+          <div class="p-4" id="analysisContent">
+            {% if driver_name and analysis1 %}
+            <div id="driverResults">
+              <div class="driver-card">
+                <div class="flex justify-between items-start mb-4">
+                  <div>
+                    <h3 class="text-2xl font-bold mb-1">{{ driver_name }}</h3>
+                    <p class="text-sm text-gray-400">
+                      {% for index, row in df_drivers.iterrows() %}
+                        {% if row['Driver'] == driver_name %}
+                          {{ row['Team'] }}
+                        {% endif %}
+                      {% endfor %}
+                    </p>
+                  </div>
+                  <div class="px-3 py-1 bg-red-600 rounded text-white font-bold">
+                    #{{ df_stats[df_stats['Driver'] == driver_name]['Pos'].values[0] }}
+                  </div>
+                </div>
+                
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                  <div class="stat-box">
+                    <div class="stat-label">WINS</div>
+                    <div class="stat-value">{{ df_stats[df_stats['Driver'] == driver_name]['1st'].values[0] }}</div>
+                  </div>
+                  <div class="stat-box">
+                    <div class="stat-label">PODIUMS</div>
+                    <div class="stat-value">{{ df_stats[df_stats['Driver'] == driver_name]['Pod'].values[0] }}</div>
+                  </div>
+                  <div class="stat-box">
+                    <div class="stat-label">POLES</div>
+                    <div class="stat-value">{{ df_stats[df_stats['Driver'] == driver_name]['Pole'].values[0] }}</div>
+                  </div>
+                  <div class="stat-box">
+                    <div class="stat-label">POINTS</div>
+                    <div class="stat-value">{{ df_stats[df_stats['Driver'] == driver_name]['PTS'].values[0] }}</div>
+                  </div>
+                </div>
+                
+                <div class="mb-6">
+                  <div class="flex justify-between items-center mb-1">
+                    <span class="text-sm">Championship Performance</span>
+                    <span class="text-sm font-bold">{{ ((df_stats[df_stats['Driver'] == driver_name]['PTS'].values[0] / df_stats['PTS'].max()) * 100) | round(0) }}%</span>
+                  </div>
+                  <div class="progress-container">
+                    <div class="progress-bar" style="width: {{ ((df_stats[df_stats['Driver'] == driver_name]['PTS'].values[0] / df_stats['PTS'].max()) * 100) | round(0) }}%;"></div>
+                  </div>
+                </div>
+                
+                <div class="mb-6">
+                  <h4 class="text-lg font-semibold mb-2">Race Analysis</h4>
+                  <div id="raceAnalysisDisplay">
+                    {{ analysis2 | replace('\n', '<br>') | safe }}
+                  </div>
+                </div>
+                
+                <div>
+                  <h4 class="text-lg font-semibold mb-2">ML Insights</h4>
+                  <div id="mlInsightsDisplay">
+                    {{ analysis1 | replace('\n', '<br>') | safe }}
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% else %}
+            <div class="text-center py-10">
+              <i class="fas fa-user-circle text-6xl text-gray-600 mb-4"></i>
+              <p class="text-gray-400">Select a driver to see detailed analysis</p>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Charts & Visualizations -->
+    <section id="charts" class="mb-12">
+      <h2 class="text-2xl font-bold mb-6 flex items-center">
+        <i class="fas fa-chart-area mr-2 text-red-600"></i> PERFORMANCE CHARTS
+      </h2>
+      
+      <div class="f1-card mb-8">
+        <div class="f1-card-header">
+          <h3 class="text-lg font-bold">CUMULATIVE POINTS</h3>
+          <div>
+            <button id="selectDriversBtn" class="f1-btn text-sm">
+              <i class="fas fa-users mr-1"></i> SELECT DRIVERS
+            </button>
+          </div>
+        </div>
+        <div class="p-4">
+          <div class="chart-container">
+            <img src="data:image/png;base64,{{ cumulative_plot }}" alt="Cumulative Points Chart" class="plot-img">
+          </div>
+          
+          <!-- Driver Selection Modal -->
+          <div id="driverSelectModal" class="overlay">
+            <div class="modal p-6">
+              <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold">Select Drivers</h3>
+                <span class="close-modal">×</span>
+              </div>
+              <form id="driverSelectionForm" method="POST" action="/">
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                  {% for driver in all_drivers %}
+                  <label class="flex items-center">
+                    <input type="checkbox" name="drivers" value="{{ driver }}" {% if driver in selected_drivers %}checked{% endif %} class="mr-2">
+                    {{ driver }}
+                  </label>
+                  {% endfor %}
+                </div>
+                <button type="submit" class="f1-btn w-full">
+                  <i class="fas fa-chart-line mr-2"></i> UPDATE CHART
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="tabs" id="chartTabs">
+        <div class="tab active" data-tab="winPercentage">WIN %</div>
+        <div class="tab" data-tab="podiumPercentage">PODIUM %</div>
+        <div class="tab" data-tab="podiumDistribution">PODIUM DISTRIBUTION</div>
+        <div class="tab" data-tab="phaseComparison">PHASE COMPARISON</div>
+        <div class="tab" data-tab="winTrend">WIN TREND</div>
+        <div class="tab" data-tab="dnfComparison">DNF COMPARISON</div>
+      </div>
+      
+      <div class="f1-card">
+        <div class="tab-content active" id="winPercentage">
+          <div class="chart-container">
+            <img src="data:image/png;base64,{{ top3_plots[0] }}" alt="Win Percentage Chart" class="plot-img">
+          </div>
+        </div>
+        <div class="tab-content" id="podiumPercentage">
+          <div class="chart-container">
+            <img src="data:image/png;base64,{{ top3_plots[1] }}" alt="Podium Percentage Chart" class="plot-img">
+          </div>
+        </div>
+        <div class="tab-content" id="podiumDistribution">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
+            <div class="chart-container h-64">
+              <img src="data:image/png;base64,{{ top3_plots[2] }}" alt="Podium Distribution Verstappen" class="plot-img">
+            </div>
+            <div class="chart-container h-64">
+              <img src="data:image/png;base64,{{ top3_plots[3] }}" alt="Podium Distribution Norris" class="plot-img">
+            </div>
+            <div class="chart-container h-64">
+              <img src="data:image/png;base64,{{ top3_plots[4] }}" alt="Podium Distribution Leclerc" class="plot-img">
+            </div>
+          </div>
+        </div>
+        <div class="tab-content" id="phaseComparison">
+          <div class="chart-container">
+            <img src="data:image/png;base64,{{ top3_plots[5] }}" alt="Phase Comparison Chart" class="plot-img">
+          </div>
+        </div>
+        <div class="tab-content" id="winTrend">
+          <div class="chart-container">
+            <img src="data:image/png;base64,{{ top3_plots[6] }}" alt="Win Trend Chart" class="plot-img">
+          </div>
+        </div>
+        <div class="tab-content" id="dnfComparison">
+          <div class="chart-container">
+            <img src="data:image/png;base64,{{ top3_plots[7] }}" alt="DNF Comparison Chart" class="plot-img">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ML Analysis & Simulation -->
+    <!-- ML Analysis Section -->
+<!-- ML Analysis Section -->
+    <section id="analysis" class="mb-12">
+        <h2 class="text-2xl font-bold mb-6 flex items-center">
+        <i class="fas fa-brain mr-2 text-red-600"></i> ML ANALYSIS
+        </h2>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div class="f1-card">
+            <div class="f1-card-header">
+            <h3 class="text-lg font-bold">MODEL PERFORMANCE</h3>
+            </div>
+            <div class="p-4">
+            <div class="mb-6">
+                <h4 class="text-lg mb-2 font-semibold">Model Accuracy</h4>
+                <div class="progress-container">
+                <div class="progress-bar" style="width: {{ accuracy * 100 }}%;"></div>
+                </div>
+                <p class="text-sm text-gray-400">Accuracy: {{ (accuracy * 100) | round(2) }}%</p>
+            </div>
+            <div>
+                <h4 class="text-lg mb-2 font-semibold">Feature Importance</h4>
+                <ul class="text-sm">
+                {% for feature, score in feature_importance %}
+                <li>{{ feature }}: {{ (score * 100) | round(2) }}%</li>
+                {% endfor %}
+                </ul>
+            </div>
+            </div>
+        </div>
+        
+        <div class="f1-card">
+            <div class="f1-card-header">
+            <h3 class="text-lg font-bold">SIMULATION RESULTS</h3>
+            </div>
+            <div class="p-4">
+            <p class="mb-4">Download the race simulation results, including race positions, cumulative points, and win probabilities.</p>
+            <a href="{{ url_for('download_simulation') }}" class="f1-btn w-full">
+                <i class="fas fa-download mr-2"></i> DOWNLOAD SIMULATION
+            </a>
+            </div>
+        </div>
+        </div>
+    </section>
+        
+        <div class="f1-card">
+          <div class="f1-card-header">
+            <h3 class="text-lg font-bold">SIMULATION RESULTS</h3>
+          </div>
+          <div class="p-4">
+            <p class="mb-4">Download the race simulation results, including race positions, cumulative points, and win probabilities.</p>
+            <a href="{{ url_for('download_simulation') }}" class="f1-btn w-full">
+              <i class="fas fa-download mr-2"></i> DOWNLOAD SIMULATION
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Simulation Section -->
+    <section id="simulation" class="mb-12">
+      <h2 class="text-2xl font-bold mb-6 flex items-center">
+        <i class="fas fa-flag-checkered mr-2 text-red-600"></i> RACE SIMULATION
+      </h2>
+      <div class="f1-card">
+        <div class="p-4">
+          <p class="mb-4">The simulation provides insights into race outcomes based on historical data, including:</p>
+          <ul class="list-disc pl-6 mb-4">
+            <li>Race positions for each driver</li>
+            <li>Cumulative points over the season</li>
+            <li>Win probabilities adjusted for performance factors</li>
+          </ul>
+          <p>Click below to download the detailed results.</p>
+          <a href="{{ url_for('download_simulation') }}" class="f1-btn w-full mt-4">
+            <i class="fas fa-file-excel mr-2"></i> GET SIMULATION RESULTS
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Scroll Indicator -->
+  <div class="scroll-indicator">
+    <i class="fas fa-chevron-up"></i>
+  </div>
+
+  <script>
+    // Tab switching
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(tab.dataset.tab).classList.add('active');
+      });
+    });
+
+    // Modal toggle
+    const modal = document.getElementById('driverSelectModal');
+    const selectDriversBtn = document.getElementById('selectDriversBtn');
+    const closeModal = document.querySelector('.close-modal');
+
+    selectDriversBtn.addEventListener('click', () => {
+      modal.style.display = 'flex';
+    });
+
+    closeModal.addEventListener('click', () => {
+      modal.style.display = 'none';
+    });
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.style.display = 'none';
+      }
+    });
+
+    // Scroll indicator
+    window.addEventListener('scroll', () => {
+      document.querySelector('.scroll-indicator').classList.toggle('visible', window.scrollY > 300);
+    });
+
+    document.querySelector('.scroll-indicator').addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  </script>
+</body>
+</html>
