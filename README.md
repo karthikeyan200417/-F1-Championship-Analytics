@@ -53,9 +53,4 @@ Explore the Power BI dashboard to visualize key statistics across the F1 2024 se
 ├── notebooks/            # Jupyter Notebooks for EDA and modeling
 ├── PowerBI/              # Power BI dashboard files
 └── README.md             # Project overview and usage guide
-
-
-
-
-
-
+---
