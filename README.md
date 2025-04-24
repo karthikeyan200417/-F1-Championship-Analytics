@@ -35,6 +35,8 @@ Explore the Power BI dashboard to visualize key statistics across the F1 2024 se
 ![image](img/dash1.png)
 ![image](img/dash2.png)
 ![image](img/dash3.png)
+---
+
 ## 🛠️ Tech Stack
 
 - **Python** – Data scraping, processing, and ML modeling  
