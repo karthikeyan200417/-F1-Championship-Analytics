@@ -52,7 +52,7 @@ Explore the Power BI dashboard to visualize key statistics across the F1 2024 se
 
 ```bash
 ├── data.py               # Flask app for scraping and Excel export
-├── notebooks/            # Jupyter Notebooks for EDA and modeling
+├── app.py                # Flask app for analysus
 ├── PowerBI/              # Power BI dashboard files
 └── README.md             # Project overview and usage guide
 ---
