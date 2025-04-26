@@ -1,7 +1,16 @@
+<<<<<<< HEAD
 flask==2.0.1
 pandas==1.4.3
 numpy==1.22.4
 matplotlib==3.5.2
 seaborn==0.11.2
 scikit-learn==1.0.2
+=======
+flask==2.0.1
+pandas==1.4.3
+numpy==1.22.4
+matplotlib==3.5.2
+seaborn==0.11.2
+scikit-learn==1.0.2
+>>>>>>> 55d36930bcf90a1a25fc63c31eff384d0e52d2ee
 openpyxl==3.0.10

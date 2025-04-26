@@ -27,6 +27,15 @@ An end-to-end data science project that explores Formula 1 race data – from we
    - Models strategic decision-making across races and updates winning chances dynamically based on race outcomes.
 
 ---
+## 📷 Sample Dashboard (Power BI)
+
+Explore the Power BI dashboard to visualize key statistics across the F1 2024 season. Filter and analyze driver performances, race outcomes, and constructor contributions in an interactive format.
+
+
+![image](img/dash1.png)
+![image](img/dash2.png)
+![image](img/dash3.png)
+---
 
 ## 🛠️ Tech Stack
 
@@ -43,18 +52,7 @@ An end-to-end data science project that explores Formula 1 race data – from we
 
 ```bash
 ├── data.py               # Flask app for scraping and Excel export
-├── notebooks/            # Jupyter Notebooks for EDA and modeling
+├── app.py                # Flask app for analysus
 ├── PowerBI/              # Power BI dashboard files
 └── README.md             # Project overview and usage guide
-
-
-## 📷 Sample Dashboard (Power BI)
-
-Explore the Power BI dashboard to visualize key statistics across the F1 2024 season. Filter and analyze driver performances, race outcomes, and constructor contributions in an interactive format.
-
-![image](https://github.com/user-attachments/assets/7c3567b9-f6ed-4af6-a3cc-aaef8bb44ec8)
-![image](https://github.com/user-attachments/assets/fe9029cc-c4dc-4b3c-94ae-282186d1cf19)
-![image](https://github.com/user-attachments/assets/b095de21-2347-4bb5-ba1b-8851db828fdf)
-
-
-
+---
