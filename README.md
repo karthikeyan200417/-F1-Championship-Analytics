@@ -43,7 +43,7 @@ Explore the Flask dashboard to visualize key Analysis across the F1 2024 season.
 
 ![image](img/dash4.png)
 ![image](img/dash5.png)
-![image](img/dash6.png)
+![image](img/dash 6.png)
 ![image](img/dash7.png)
 ---
 ## 🛠️ Tech Stack
