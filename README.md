@@ -36,7 +36,16 @@ Explore the Power BI dashboard to visualize key statistics across the F1 2024 se
 ![image](img/dash2.png)
 ![image](img/dash3.png)
 ---
+## 📷 Sample Dashboard (Flask)
 
+Explore the Flask dashboard to visualize key Analysis across the F1 2024 season. Filter and analyze driver performances, race outcomes, and Deiver comparison in an interactive format.
+
+
+![image](img/dash4.png)
+![image](img/dash5.png)
+![image](img/dash6.png)
+![image](img/dash7.png)
+---
 ## 🛠️ Tech Stack
 
 - **Python** – Data scraping, processing, and ML modeling  
