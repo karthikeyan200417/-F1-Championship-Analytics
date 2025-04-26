@@ -6,6 +6,7 @@
   <title>F1 Data Analysis Dashboard</title>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.16.1/plotly.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Titillium+Web:wght@300;400;600;700&display=swap');
@@ -20,8 +21,10 @@
     }
     
     body {
-      font-family: 'Titillium Web', sans-serif;
-      background-color: var(--f1-black);
+      font-family: "Orbitron", sans-serif;
+      font-optical-sizing: auto;
+      font-style: normal;
+      background-color: white;
       color: var(--f1-white);
       margin: 0;
       padding: 0;
@@ -235,19 +238,19 @@
     .tab {
       padding: 0.75rem 1.5rem;
       cursor: pointer;
-      color: rgba(255, 255, 255, 0.7);
+      color: var(--f1-red);
       border-bottom: 3px solid transparent;
       transition: all 0.3s ease;
     }
     
     .tab.active {
       border-bottom: 3px solid var(--f1-red);
-      color: var(--f1-white);
+      color: var(--f1-accent);
       font-weight: 600;
     }
     
     .tab:hover:not(.active) {
-      color: var(--f1-white);
+      color: var(--f1-accent);
       border-bottom: 3px solid rgba(225, 6, 0, 0.5);
     }
     
@@ -408,8 +411,7 @@
                 <tr class="text-left text-sm text-gray-400 border-b border-gray-700">
                   <th class="pb-2">POS</th>
                   <th class="pb-2">DRIVER</th>
-                  <th class="pb-2">TEAM</th>
-                  <th class="pb-2 text-right">PTS</th>
+                  <th class="pb-2">PTS</th>
                 </tr>
               </thead>
               <tbody>
@@ -417,10 +419,7 @@
                 <tr class="border-b border-gray-800">
                   <td class="py-3">{{ index + 1 }}</td>
                   <td class="py-3 font-semibold">{{ row['Driver'] }}</td>
-                  <td class="py-3 {% if row['Driver'] in ['Max Verstappen', 'Sergio Perez'] %}text-blue-600{% elif row['Driver'] in ['Lando Norris', 'Oscar Piastri'] %}text-orange-500{% elif row['Driver'] in ['Charles Leclerc', 'Carlos Sainz'] %}text-red-600{% endif %}">
-                    {{ row['Team'] }}
-                  </td>
-                  <td class="py-3 text-right font-bold">{{ row['Pts'] }}</td>
+                  <td class="py-3 font-bold">{{ row['Pts'] }}</td>
                 </tr>
                 {% endfor %}
               </tbody>
@@ -460,7 +459,7 @@
 
     <!-- Driver Selection -->
     <section id="drivers" class="mb-12">
-      <h2 class="text-2xl font-bold mb-6 flex items-center">
+      <h2 class="text-2xl font-bold mb-6 flex items-center text-red-600">
         <i class="fas fa-user-astronaut mr-2 text-red-600"></i> DRIVER ANALYSIS
       </h2>
       
@@ -568,7 +567,7 @@
 
     <!-- Charts & Visualizations -->
     <section id="charts" class="mb-12">
-      <h2 class="text-2xl font-bold mb-6 flex items-center">
+      <h2 class="text-2xl font-bold mb-6 flex items-center  text-red-600">
         <i class="fas fa-chart-area mr-2 text-red-600"></i> PERFORMANCE CHARTS
       </h2>
       
@@ -633,13 +632,13 @@
         </div>
         <div class="tab-content" id="podiumDistribution">
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
-            <div class="chart-container h-64">
+            <div class="chart-container h-full">
               <img src="data:image/png;base64,{{ top3_plots[2] }}" alt="Podium Distribution Verstappen" class="plot-img">
             </div>
-            <div class="chart-container h-64">
+            <div class="chart-container h-full">
               <img src="data:image/png;base64,{{ top3_plots[3] }}" alt="Podium Distribution Norris" class="plot-img">
             </div>
-            <div class="chart-container h-64">
+            <div class="chart-container h-full">
               <img src="data:image/png;base64,{{ top3_plots[4] }}" alt="Podium Distribution Leclerc" class="plot-img">
             </div>
           </div>
@@ -666,11 +665,11 @@
     <!-- ML Analysis Section -->
 <!-- ML Analysis Section -->
     <section id="analysis" class="mb-12">
-        <h2 class="text-2xl font-bold mb-6 flex items-center">
+        <h2 class="text-2xl font-bold mb-6 flex items-center  text-red-600">
         <i class="fas fa-brain mr-2 text-red-600"></i> ML ANALYSIS
         </h2>
         
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div class="grid grid-cols-1  gap-6 mb-8 w-full">
         <div class="f1-card">
             <div class="f1-card-header">
             <h3 class="text-lg font-bold">MODEL PERFORMANCE</h3>
@@ -683,18 +682,18 @@
                 </div>
                 <p class="text-sm text-gray-400">Accuracy: {{ (accuracy * 100) | round(2) }}%</p>
             </div>
-            <div>
+            <!-- <div>
                 <h4 class="text-lg mb-2 font-semibold">Feature Importance</h4>
                 <ul class="text-sm">
                 {% for feature, score in feature_importance %}
                 <li>{{ feature }}: {{ (score * 100) | round(2) }}%</li>
                 {% endfor %}
                 </ul>
-            </div>
+            </div> -->
             </div>
         </div>
         
-        <div class="f1-card">
+        <!-- <div class="f1-card">
             <div class="f1-card-header">
             <h3 class="text-lg font-bold">SIMULATION RESULTS</h3>
             </div>
@@ -704,11 +703,11 @@
                 <i class="fas fa-download mr-2"></i> DOWNLOAD SIMULATION
             </a>
             </div>
-        </div>
+        </div> -->
         </div>
     </section>
         
-        <div class="f1-card">
+        <!-- <div class="f1-card">
           <div class="f1-card-header">
             <h3 class="text-lg font-bold">SIMULATION RESULTS</h3>
           </div>
@@ -718,13 +717,13 @@
               <i class="fas fa-download mr-2"></i> DOWNLOAD SIMULATION
             </a>
           </div>
-        </div>
+        </div> -->
       </div>
     </section>
 
     <!-- Simulation Section -->
     <section id="simulation" class="mb-12">
-      <h2 class="text-2xl font-bold mb-6 flex items-center">
+      <h2 class="text-2xl font-bold mb-6 flex items-center  text-red-600">
         <i class="fas fa-flag-checkered mr-2 text-red-600"></i> RACE SIMULATION
       </h2>
       <div class="f1-card">
@@ -736,8 +735,8 @@
             <li>Win probabilities adjusted for performance factors</li>
           </ul>
           <p>Click below to download the detailed results.</p>
-          <a href="{{ url_for('download_simulation') }}" class="f1-btn w-full mt-4">
-            <i class="fas fa-file-excel mr-2"></i> GET SIMULATION RESULTS
+          <a href="{{ url_for('download_simulation') }}" class="f1-btn w-full">
+            <i class="fas fa-file-excel mr-2 pt-4"></i> GET SIMULATION RESULTS
           </a>
         </div>
       </div>
